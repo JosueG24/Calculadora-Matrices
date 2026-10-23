@@ -1,0 +1,578 @@
+/* ============================================================
+   styles.css - Sistema de álgebra lineal
+   Tema oscuro, minimalista, aspecto de calculadora
+   ============================================================ */
+
+/* ---------- Colores y fuentes (se cambian aquí, en un solo lugar) ---------- */
+:root {
+  --fondo: #0f1115;
+  --panel: #171a21;
+  --consola: #0a0c10;
+  --borde: #262b36;
+  --texto: #e6e8ee;
+  --texto-suave: #8b93a7;
+  --acento: #f5a524;
+  --acento-texto: #1a1204;
+  --error: #ff6b6b;
+  --exito: #6ee7a8;
+
+  --fuente-texto: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --fuente-mono: Consolas, "SF Mono", Menlo, "Courier New", monospace;
+
+  color-scheme: dark; /* hace oscuros los controles nativos (selectores) */
+}
+
+/* ---------- Base ---------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--fuente-texto);
+  font-size: 15px;
+}
+
+/* ---------- Encabezado ---------- */
+.encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--borde);
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.boton-ayuda {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  color: var(--acento);
+  border: 1px solid var(--acento);
+  border-radius: 50%;
+  font-family: var(--fuente-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-ayuda:hover {
+  background: var(--acento);
+  color: var(--acento-texto);
+}
+
+/* ---------- Modal de carátula ---------- */
+.modal-caratula {
+  width: min(560px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100% - 32px);
+  padding: 0;
+  overflow: auto;
+  background: var(--panel);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-top: 2px solid var(--acento);
+  border-radius: 4px;
+}
+
+.modal-caratula::backdrop {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.caratula {
+  position: relative;
+  padding: 32px clamp(22px, 6vw, 40px) 26px;
+  text-align: center;
+}
+
+.cerrar-caratula {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cerrar-caratula:hover {
+  color: var(--texto);
+  border-color: var(--texto-suave);
+}
+
+.caratula-universidad,
+.caratula-facultad,
+.caratula-etiqueta {
+  margin: 0;
+}
+
+.caratula-universidad {
+  font-size: clamp(1.1rem, 3.5vw, 1.35rem);
+  font-weight: 600;
+}
+
+.caratula-facultad {
+  margin-top: 8px;
+  color: var(--texto-suave);
+}
+
+.caratula-etiqueta {
+  color: var(--acento);
+  font-family: var(--fuente-mono);
+  margin-top: 22px;
+}
+
+.caratula h2 {
+  margin: 6px 0 22px;
+  font-size: clamp(1.45rem, 5vw, 1.9rem);
+}
+
+.caratula-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.caratula-datos > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.caratula-campo {
+  color: var(--texto-suave);
+}
+
+.caratula-integrantes {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.caratula-integrantes h3 {
+  margin: 0 0 10px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.caratula-integrantes ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 20px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.caratula-integrantes li::marker {
+  color: var(--acento);
+}
+
+.boton-cerrar-caratula {
+  margin-top: 22px;
+}
+
+@media (max-width: 520px) {
+  .encabezado {
+    padding: 12px 16px;
+  }
+
+  .caratula-datos > div {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+
+  .caratula-integrantes ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Distribución general (pantalla mediana) ----------
+   Dos columnas: menú a la izquierda; panel principal y consola apilados a la derecha */
+.contenedor {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  grid-template-areas:
+    "menu principal"
+    "menu consola";
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+}
+
+.menu {
+  grid-area: menu;
+}
+
+.principal {
+  grid-area: principal;
+}
+
+.consola-caja {
+  grid-area: consola;
+}
+
+/* ---------- Menú lateral ---------- */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boton-menu {
+  text-align: left;
+  padding: 11px 14px;
+  background: var(--panel);
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.boton-menu:hover {
+  color: var(--texto);
+  border-color: var(--texto-suave);
+}
+
+.boton-menu.activo {
+  color: var(--acento);
+  border-color: var(--acento);
+  background: #1d1a12;
+}
+
+/* ---------- Panel principal ---------- */
+.principal {
+  padding: 22px 24px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+}
+
+.seccion.oculta {
+  display: none;
+}
+
+.seccion h2 {
+  margin: 0 0 18px;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.seccion h3 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+/* ---------- Selectores y etiquetas ---------- */
+.opciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 18px;
+  color: var(--texto-suave);
+}
+
+select {
+  padding: 7px 10px;
+  background: var(--fondo);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  font-family: var(--fuente-mono);
+  font-size: 0.95rem;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--acento);
+}
+
+/* ---------- Casillas ---------- */
+.zona-cuadricula {
+  overflow-x: auto;
+  padding: 2px;
+}
+
+.casilla {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  text-align: center;
+  font-family: var(--fuente-mono);
+  font-size: 1.05rem;
+}
+
+.casilla::placeholder {
+  color: #3a4150;
+}
+
+.casilla:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 2px rgba(245, 165, 36, 0.35);
+}
+
+/* Casilla vacía o inválida (va después de :focus para que gane) */
+.casilla.error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px var(--error);
+}
+
+/* ---------- Matrices con corchetes grandes ---------- */
+.matriz {
+  position: relative;
+  display: inline-block;
+  padding: 12px 24px;
+}
+
+/* Corchete izquierdo y derecho: dos cajas con solo 3 bordes visibles */
+.matriz::before,
+.matriz::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  border: 3px solid var(--texto-suave);
+}
+
+.matriz::before {
+  left: 0;
+  border-right: none;
+}
+
+.matriz::after {
+  right: 0;
+  border-left: none;
+}
+
+/* Las columnas las define ui.js con grid-template-columns */
+.rejilla {
+  display: grid;
+  gap: 10px;
+}
+
+/* Celda de una matriz de resultado (solo lectura) */
+.celda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 64px;
+  padding: 0 8px;
+  background: var(--fondo);
+  color: var(--exito);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  font-family: var(--fuente-mono);
+  font-size: 1.05rem;
+}
+
+/* ---------- Multiplicación: dos matrices lado a lado (o una debajo de otra) ---------- */
+.par-matrices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 40px;
+}
+
+/* ---------- Sistemas de ecuaciones ---------- */
+.ecuacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.etiqueta {
+  color: var(--texto);
+  font-family: var(--fuente-mono);
+  font-size: 1.1rem;
+}
+
+/* ---------- Botones Calcular y Limpiar ---------- */
+.botones {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.boton-calcular {
+  padding: 10px 30px;
+  background: var(--acento);
+  color: var(--acento-texto);
+  border: 1px solid var(--acento);
+  border-radius: 3px;
+  font-family: var(--fuente-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-calcular:hover {
+  filter: brightness(1.1);
+}
+
+.boton-limpiar {
+  padding: 10px 22px;
+  background: transparent;
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  font-family: var(--fuente-mono);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.boton-limpiar:hover {
+  color: var(--texto);
+  border-color: var(--texto-suave);
+}
+
+/* Foco visible con teclado en todos los botones */
+button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ---------- Zona de resultado ---------- */
+.resultado {
+  margin-top: 22px;
+  padding: 18px;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+  font-family: var(--fuente-mono);
+}
+
+/* Si no hay nada que mostrar, la zona desaparece */
+.resultado:empty {
+  display: none;
+}
+
+.resultado-matriz {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.etiqueta-resultado {
+  color: var(--texto-suave);
+  font-size: 1.3rem;
+}
+
+.numero-grande {
+  color: var(--exito);
+  font-size: 2rem;
+}
+
+.valor {
+  margin: 4px 0;
+  color: var(--exito);
+  font-size: 1.4rem;
+}
+
+.mensaje-error {
+  color: var(--error);
+}
+
+.mensaje-aviso {
+  color: var(--acento);
+}
+
+/* ---------- Consola de procedimiento ---------- */
+.consola-caja {
+  background: var(--consola);
+  border: 1px solid var(--borde);
+  border-radius: 3px;
+}
+
+.consola-titulo {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--borde);
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.consola {
+  height: 320px;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  color: var(--texto);
+  font-family: var(--fuente-mono);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ---------- Pantalla ancha: menú | panel | consola ---------- */
+@media (min-width: 1250px) {
+  .contenedor {
+    grid-template-columns: 210px minmax(0, 1fr) 400px;
+    grid-template-areas: "menu principal consola";
+  }
+
+  /* La consola se queda fija a la vista mientras se baja el panel */
+  .consola-caja {
+    position: sticky;
+    top: 16px;
+  }
+
+  .consola {
+    height: calc(100vh - 140px);
+    min-height: 300px;
+  }
+}
+
+/* ---------- Pantalla angosta: el menú pasa arriba y todo se apila ---------- */
+@media (max-width: 800px) {
+  .contenedor {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "menu"
+      "principal"
+      "consola";
+  }
+
+  .menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .boton-menu {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .principal {
+    padding: 16px;
+  }
+}

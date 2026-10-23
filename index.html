@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de álgebra lineal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Encabezado -->
+  <header class="encabezado">
+    <h1>Sistema de álgebra lineal</h1>
+    <button class="boton-ayuda" type="button" onclick="abrirCaratula()" aria-label="Mostrar carátula" title="Mostrar carátula">?</button>
+  </header>
+
+  <dialog id="modal-caratula" class="modal-caratula" aria-labelledby="titulo-caratula">
+    <div class="caratula">
+
+      <p class="caratula-universidad">Universidad Mariano Gálvez de Guatemala</p>
+      <p class="caratula-facultad">Facultad de Ingeniería</p>
+
+      <p class="caratula-etiqueta">Proyecto Final</p>
+      <h2 id="titulo-caratula">Álgebra Lineal</h2>
+
+      <div class="caratula-datos">
+        <div>
+          <span class="caratula-campo">Catedrático</span>
+          <span>Ing. Iver Adolfo Vargas Villanueva</span>
+        </div>
+        <div>
+          <span class="caratula-campo">Carrera</span>
+          <span>Ingeniería en Sistemas</span>
+        </div>
+        <div>
+          <span class="caratula-campo">Sección</span>
+          <span>D</span>
+        </div>
+      </div>
+
+      <div class="caratula-integrantes">
+        <h3>Integrantes</h3>
+        <ul>
+          <li>Josue David Guzman Figueroa</li>
+          <li>Marvin Garcia</li>
+          <li>Onner Bernal</li>
+          <li>Heung Ahn</li>
+        </ul>
+      </div>
+
+      <button class="boton-calcular boton-cerrar-caratula" type="button" onclick="document.getElementById('modal-caratula').close()">Cerrar</button>
+    </div>
+  </dialog>
+
+  <div class="contenedor">
+
+    <!-- Menú lateral: un botón por operación -->
+    <nav class="menu">
+      <button id="menu-transpuesta" class="boton-menu activo" onclick="mostrarSeccion('transpuesta')">Transpuesta</button>
+      <button id="menu-determinante" class="boton-menu" onclick="mostrarSeccion('determinante')">Determinante</button>
+      <button id="menu-inversa" class="boton-menu" onclick="mostrarSeccion('inversa')">Inversa</button>
+      <button id="menu-multiplicacion" class="boton-menu" onclick="mostrarSeccion('multiplicacion')">Multiplicación</button>
+      <button id="menu-sistemas" class="boton-menu" onclick="mostrarSeccion('sistemas')">Sistemas de ecuaciones</button>
+    </nav>
+
+    <!-- Panel principal: solo se ve la sección activa -->
+    <main class="principal">
+
+      <!-- 1. TRANSPUESTA -->
+      <section id="op-transpuesta" class="seccion">
+        <h2>Transpuesta</h2>
+
+        <div class="opciones">
+          <label for="tamano-transpuesta">Tamaño</label>
+          <select id="tamano-transpuesta" onchange="cambiarTamanoTranspuesta()">
+            <option value="2">2×2</option>
+            <option value="3">3×3</option>
+            <option value="4">4×4</option>
+          </select>
+        </div>
+
+        <div id="cuadricula-transpuesta" class="zona-cuadricula"></div>
+
+        <div class="botones">
+          <button class="boton-calcular" onclick="calcularTranspuesta()">Calcular</button>
+          <button class="boton-limpiar" onclick="limpiarOperacion('transpuesta')">Limpiar</button>
+        </div>
+
+        <div id="resultado-transpuesta" class="resultado"></div>
+      </section>
+
+      <!-- 2. DETERMINANTE -->
+      <section id="op-determinante" class="seccion oculta">
+        <h2>Determinante</h2>
+
+        <div class="opciones">
+          <label for="tamano-determinante">Tamaño</label>
+          <select id="tamano-determinante" onchange="cambiarTamanoDeterminante()">
+            <option value="2">2×2</option>
+            <option value="3">3×3</option>
+          </select>
+
+          <label for="metodo-determinante">Método</label>
+          <select id="metodo-determinante" onchange="cambiarMetodo('resultado-determinante')">
+            <option value="sarrus">Regla de Sarrus</option>
+            <option value="cofactores">Cofactores</option>
+          </select>
+        </div>
+
+        <div id="cuadricula-determinante" class="zona-cuadricula"></div>
+
+        <div class="botones">
+          <button class="boton-calcular" onclick="calcularDeterminante()">Calcular</button>
+          <button class="boton-limpiar" onclick="limpiarOperacion('determinante')">Limpiar</button>
+        </div>
+
+        <div id="resultado-determinante" class="resultado"></div>
+      </section>
+
+      <!-- 3. INVERSA -->
+      <section id="op-inversa" class="seccion oculta">
+        <h2>Inversa</h2>
+
+        <div class="opciones">
+          <label for="tamano-inversa">Tamaño</label>
+          <select id="tamano-inversa" onchange="cambiarTamanoInversa()">
+            <option value="2">2×2</option>
+            <option value="3">3×3</option>
+          </select>
+
+          <label for="metodo-inversa">Método</label>
+          <select id="metodo-inversa" onchange="cambiarMetodo('resultado-inversa')">
+            <option value="gauss-jordan">Gauss-Jordan</option>
+            <option value="adjunta">Adjunta</option>
+          </select>
+        </div>
+
+        <div id="cuadricula-inversa" class="zona-cuadricula"></div>
+
+        <div class="botones">
+          <button class="boton-calcular" onclick="calcularInversa()">Calcular</button>
+          <button class="boton-limpiar" onclick="limpiarOperacion('inversa')">Limpiar</button>
+        </div>
+
+        <div id="resultado-inversa" class="resultado"></div>
+      </section>
+
+      <!-- 4. MULTIPLICACIÓN -->
+      <section id="op-multiplicacion" class="seccion oculta">
+        <h2>Multiplicación</h2>
+
+        <div class="par-matrices">
+
+          <!-- Matriz A -->
+          <div class="bloque-matriz">
+            <h3>Matriz A</h3>
+            <div class="opciones">
+              <label for="filas-a-multiplicacion">Filas</label>
+              <select id="filas-a-multiplicacion" onchange="cambiarDimensionesA()">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+
+              <label for="columnas-a-multiplicacion">Columnas</label>
+              <select id="columnas-a-multiplicacion" onchange="cambiarDimensionesA()">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div id="cuadricula-a-multiplicacion" class="zona-cuadricula"></div>
+          </div>
+
+          <!-- Matriz B -->
+          <div class="bloque-matriz">
+            <h3>Matriz B</h3>
+            <div class="opciones">
+              <label for="filas-b-multiplicacion">Filas</label>
+              <select id="filas-b-multiplicacion" onchange="cambiarDimensionesB()">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+
+              <label for="columnas-b-multiplicacion">Columnas</label>
+              <select id="columnas-b-multiplicacion" onchange="cambiarDimensionesB()">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div id="cuadricula-b-multiplicacion" class="zona-cuadricula"></div>
+          </div>
+
+        </div>
+
+        <div class="botones">
+          <button class="boton-calcular" onclick="calcularMultiplicacion()">Calcular</button>
+          <button class="boton-limpiar" onclick="limpiarOperacion('multiplicacion')">Limpiar</button>
+        </div>
+
+        <div id="resultado-multiplicacion" class="resultado"></div>
+      </section>
+
+      <!-- 5. SISTEMAS DE ECUACIONES -->
+      <section id="op-sistemas" class="seccion oculta">
+        <h2>Sistemas de ecuaciones</h2>
+
+        <div class="opciones">
+          <label for="cantidad-sistemas">Ecuaciones</label>
+          <select id="cantidad-sistemas" onchange="cambiarCantidadSistemas()">
+            <option value="2">2 ecuaciones</option>
+            <option value="3">3 ecuaciones</option>
+          </select>
+
+          <!-- Las opciones de este selector las pone ui.js según la cantidad de ecuaciones -->
+          <label for="metodo-sistemas">Método</label>
+          <select id="metodo-sistemas" onchange="cambiarMetodo('resultado-sistemas')"></select>
+        </div>
+
+        <!-- Las filas de ecuaciones las crea ui.js -->
+        <div id="formulario-sistemas" class="zona-cuadricula"></div>
+
+        <div class="botones">
+          <button class="boton-calcular" onclick="calcularSistemas()">Calcular</button>
+          <button class="boton-limpiar" onclick="limpiarOperacion('sistemas')">Limpiar</button>
+        </div>
+
+        <div id="resultado-sistemas" class="resultado"></div>
+      </section>
+
+    </main>
+
+    <!-- Consola de procedimiento: siempre visible -->
+    <aside class="consola-caja">
+      <h2 class="consola-titulo">Procedimiento</h2>
+      <pre id="consola" class="consola"></pre>
+    </aside>
+
+  </div>
+
+  <!-- El mock temporal es llamado por las funciones de los módulos A, B y C. -->
+  <script src="js/mocks.js"></script>
+  <script src="js/ModuloA.js"></script>
+  <script src="js/ModuloB.js"></script>
+  <script src="js/ModuloC.js"></script>
+  <script src="js/ui.js"></script>
+
+</body>
+</html>
