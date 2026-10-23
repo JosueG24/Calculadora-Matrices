@@ -26,7 +26,6 @@ var ModuloA = {
     };
   },
 
-
   multiplicar: function (MatrizA, MatrizB) {
 
     let pasos = ['Recibimos matrices A y B para multiplicar']
@@ -202,7 +201,7 @@ var ModuloA = {
 
       return {
         ok: true,
-        resultado: { estado: "infinita", valores: null },
+        resultado: { estado: "infinitas", valores: null },
         pasos: pasos,
         error: null
       };
@@ -259,27 +258,156 @@ var ModuloA = {
     };
   },
 
-  resolverSistema2: function (matrizAumentada, metodo) {
-    let Resultado = 0;
-    console.log(metodo)
-    switch (metodo) {
+  resolverIgualacion2: function (sistema) {
+    const tolerancia = 0.0000000001;
+    let pasos = [];
+    pasos.push("Voy a despejar la misma variable en las dos ecuaciones y luego igualar las expresiones.");
 
+    // Busco una variable cuyo coeficiente no sea cero en ambas ecuaciones.
+    let variable = -1;
+    for (let columna = 0; columna < 2; columna++) {
+      if (Math.abs(sistema[0][columna]) >= tolerancia && Math.abs(sistema[1][columna]) >= tolerancia) {
+        variable = columna;
+        break;
+      }
+    }
+
+    // Si ambas ecuaciones solo contienen variables distintas, se despeja cada una.
+    if (variable === -1) {
+      let primeraVariable = Math.abs(sistema[0][0]) >= tolerancia ? 0 : (Math.abs(sistema[0][1]) >= tolerancia ? 1 : -1);
+      let segundaVariable = Math.abs(sistema[1][0]) >= tolerancia ? 0 : (Math.abs(sistema[1][1]) >= tolerancia ? 1 : -1);
+
+      if (primeraVariable === -1 || segundaVariable === -1) {
+        let filaVacia = primeraVariable === -1 ? sistema[0] : sistema[1];
+        if (Math.abs(filaVacia[2]) >= tolerancia) {
+          pasos.push("Una ecuación queda 0 = " + filaVacia[2] + "; es una contradicción.");
+          return { ok: true, resultado: { estado: "inconsistente", valores: null }, pasos: pasos, error: null };
+        }
+        pasos.push("Una ecuación queda 0 = 0, así que no agrega una condición nueva.");
+        pasos.push("La otra ecuación deja una variable libre; hay infinitas soluciones.");
+        return { ok: true, resultado: { estado: "infinitas", valores: null }, pasos: pasos, error: null };
+      }
+
+      if (primeraVariable === segundaVariable) {
+        pasos.push("Las ecuaciones no permiten despejar dos variables independientes; reviso si son compatibles.");
+        return this.resolverEliminacion2(sistema);
+      }
+
+      let valores = [0, 0];
+      valores[primeraVariable] = sistema[0][2] / sistema[0][primeraVariable];
+      valores[segundaVariable] = sistema[1][2] / sistema[1][segundaVariable];
+      pasos.push("Despejo " + (primeraVariable === 0 ? "x" : "y") + " de la primera ecuación: " + valores[primeraVariable] + ".");
+      pasos.push("Despejo " + (segundaVariable === 0 ? "x" : "y") + " de la segunda ecuación: " + valores[segundaVariable] + ".");
+      pasos.push("Solución única: x = " + valores[0] + ", y = " + valores[1] + ".");
+      return { ok: true, resultado: { estado: "unica", valores: valores }, pasos: pasos, error: null };
+    }
+
+    let otraVariable = variable === 0 ? 1 : 0;
+    let nombreVariable = variable === 0 ? "x" : "y";
+    let nombreOtra = otraVariable === 0 ? "x" : "y";
+    let expresion1 = "(" + sistema[0][2] + " - " + sistema[0][otraVariable] + nombreOtra + ") / " + sistema[0][variable];
+    let expresion2 = "(" + sistema[1][2] + " - " + sistema[1][otraVariable] + nombreOtra + ") / " + sistema[1][variable];
+    let constante1 = sistema[0][2] / sistema[0][variable];
+    let constante2 = sistema[1][2] / sistema[1][variable];
+    let pendiente1 = sistema[0][otraVariable] / sistema[0][variable];
+    let pendiente2 = sistema[1][otraVariable] / sistema[1][variable];
+
+    pasos.push("Ecuación 1: " + nombreVariable + " = " + expresion1 + " = " + constante1 + " - (" + pendiente1 + ")" + nombreOtra + ".");
+    pasos.push("Ecuación 2: " + nombreVariable + " = " + expresion2 + " = " + constante2 + " - (" + pendiente2 + ")" + nombreOtra + ".");
+    pasos.push("Igualo las expresiones despejadas de " + nombreVariable + ".");
+
+    let coeficiente = pendiente2 - pendiente1;
+    let termino = constante2 - constante1;
+    pasos.push("(" + pendiente2 + " - " + pendiente1 + ")" + nombreOtra + " = " + constante2 + " - " + constante1 + ".");
+
+    if (Math.abs(coeficiente) < tolerancia) {
+      if (Math.abs(termino) < tolerancia) {
+        pasos.push("La igualdad se cumple para cualquier valor de " + nombreOtra + "; el sistema tiene infinitas soluciones.");
+        return { ok: true, resultado: { estado: "infinitas", valores: null }, pasos: pasos, error: null };
+      }
+      pasos.push("La igualdad produce 0 = " + termino + ", una contradicción; el sistema no tiene solución.");
+      return { ok: true, resultado: { estado: "inconsistente", valores: null }, pasos: pasos, error: null };
+    }
+
+    let valores = [0, 0];
+    valores[otraVariable] = termino / coeficiente;
+    valores[variable] = (sistema[0][2] - sistema[0][otraVariable] * valores[otraVariable]) / sistema[0][variable];
+    pasos.push(nombreOtra + " = " + termino + " / " + coeficiente + " = " + valores[otraVariable] + ".");
+    pasos.push("Sustituyo " + nombreOtra + " en el despeje de " + nombreVariable + ": " + nombreVariable + " = " + valores[variable] + ".");
+    pasos.push("Solución única: x = " + valores[0] + ", y = " + valores[1] + ".");
+    return { ok: true, resultado: { estado: "unica", valores: valores }, pasos: pasos, error: null };
+  },
+
+  resolverSustitucion2: function (sistema) {
+    const tolerancia = 0.0000000001;
+    let pasos = [];
+    pasos.push("Voy a despejar una variable de una ecuación y sustituirla en la otra.");
+
+    // Elijo una ecuación con algún coeficiente distinto de cero.
+    let filaDespeje = -1;
+    for (let fila = 0; fila < 2; fila++) {
+      if (Math.abs(sistema[fila][0]) >= tolerancia || Math.abs(sistema[fila][1]) >= tolerancia) {
+        filaDespeje = fila;
+        break;
+      }
+    }
+
+    if (filaDespeje === -1) {
+      let consistente = Math.abs(sistema[0][2]) < tolerancia && Math.abs(sistema[1][2]) < tolerancia;
+      pasos.push(consistente ? "Ambas ecuaciones quedan 0 = 0; cualquier par (x, y) es solución." : "Hay una ecuación de la forma 0 = c, con c distinto de cero; existe contradicción.");
+      return { ok: true, resultado: { estado: consistente ? "infinitas" : "inconsistente", valores: null }, pasos: pasos, error: null };
+    }
+
+    let columna = Math.abs(sistema[filaDespeje][0]) >= tolerancia ? 0 : 1;
+    let otra = columna === 0 ? 1 : 0;
+    let nombre = columna === 0 ? "x" : "y";
+    let nombreOtra = otra === 0 ? "x" : "y";
+    let filaSustitucion = filaDespeje === 0 ? 1 : 0;
+    let coeficienteDespeje = sistema[filaDespeje][columna];
+    let coeficienteOtra = sistema[filaDespeje][otra];
+    let constanteDespeje = sistema[filaDespeje][2];
+    let expresion = "(" + constanteDespeje + " - " + coeficienteOtra + nombreOtra + ") / " + coeficienteDespeje;
+
+    pasos.push("De la ecuación " + (filaDespeje + 1) + ", despejo " + nombre + " = " + expresion + ".");
+    pasos.push("Sustituyo esa expresión en la ecuación " + (filaSustitucion + 1) + ".");
+
+    let coeficiente = sistema[filaSustitucion][otra] - sistema[filaSustitucion][columna] * coeficienteOtra / coeficienteDespeje;
+    let termino = sistema[filaSustitucion][2] - sistema[filaSustitucion][columna] * constanteDespeje / coeficienteDespeje;
+    pasos.push("Después de sustituir: " + coeficiente + nombreOtra + " = " + termino + ".");
+
+    if (Math.abs(coeficiente) < tolerancia) {
+      if (Math.abs(termino) < tolerancia) {
+        pasos.push("La igualdad queda 0 = 0; hay infinitas soluciones.");
+        return { ok: true, resultado: { estado: "infinitas", valores: null }, pasos: pasos, error: null };
+      }
+      pasos.push("La igualdad queda 0 = " + termino + "; el sistema no tiene solución.");
+      return { ok: true, resultado: { estado: "inconsistente", valores: null }, pasos: pasos, error: null };
+    }
+
+    let valores = [0, 0];
+    valores[otra] = termino / coeficiente;
+    valores[columna] = (constanteDespeje - coeficienteOtra * valores[otra]) / coeficienteDespeje;
+    pasos.push(nombreOtra + " = " + termino + " / " + coeficiente + " = " + valores[otra] + ".");
+    pasos.push("Sustituyo " + nombreOtra + " en el despeje: " + nombre + " = " + valores[columna] + ".");
+    pasos.push("Solución única: x = " + valores[0] + ", y = " + valores[1] + ".");
+    return { ok: true, resultado: { estado: "unica", valores: valores }, pasos: pasos, error: null };
+  },
+
+  resolverSistema2: function (matrizAumentada, metodo) {
+    let Resultado;
+    switch (metodo) {
       case 'eliminacion':
-        Resultado = this.resolverEliminacion2(matrizAumentada)
+        Resultado = this.resolverEliminacion2(matrizAumentada);
         break;
       case 'igualacion':
+        Resultado = this.resolverIgualacion2(matrizAumentada);
         break;
       case 'sustitucion':
+        Resultado = this.resolverSustitucion2(matrizAumentada);
         break;
       default:
-        break;
-
+        Resultado = { ok: false, resultado: null, pasos: [], error: 'Método de resolución no reconocido.' };
     }
-    return {
-      ok: Resultado.ok,
-      resultado: Resultado.resultado,
-      pasos: Resultado.pasos,
-      error: Resultado.error
-    };
+    return Resultado;
   }
 };
