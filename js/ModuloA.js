@@ -48,7 +48,7 @@ var ModuloA = {
     for (let fila = 0; fila < MatrizA.length; fila++) {
       MatrizResultado[fila] = [];
       pasos.push('iniciamos a operar fila :' + (fila + 1))
-      for (let columna = 0; columna < MatrizA[fila].length; columna++) {
+      for (let columna = 0; columna < MatrizB[0].length; columna++) {
         let suma = 0;
         pasos.push('iniciamos a operar columna :' + (columna + 1))
         for (let k = 0; k < MatrizA[fila].length; k++) {
